@@ -54,7 +54,7 @@ resource "ibmcloud_infra_virtual_guest" "web_node" {
   ssh_key_ids = [
     "${ibmcloud_infra_ssh_key.ssh_key.id}"
   ]
-  post_install_script_uri = ""
+  post_install_script_uri = "https://raw.githubusercontent.com/IBM-Bluemix/tf-bluemix-loadbalanced-web-servers/master/post-install.sh"
   # applys tags to the VM
   tags = "${var.vm_tags}"
 }
