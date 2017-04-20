@@ -1,15 +1,14 @@
 # Terraform Bluemix Load Balanced Web Servers
 
-An example Terraform configuration template to deploy an IBM load balancer fronted by DNS and _N_ number of web servers running nginx configured with a simple hello world app .
+An example Terraform configuration template to deploy an IBM load balancer and _N_ number of web servers running nginx configured with a simple hello world app.
 
 This configuration will create the following resources:
 
 - A Private VLAN
 - A Load balancer
-- _N_ (default 2) load balancer service definitions
-- _N_ (default 2) virtual guests acting as web servers
-- A DNS domain
-- A DNS record
+- _N_ (default `2`) load balancer service definitions
+- An SSH Key
+- _N_ (default `2`) virtual guests acting as web servers
 
 # Architecture
 
