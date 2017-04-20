@@ -1,77 +1,36 @@
-# Terraform Bluemix loadbalanced web servers
+# Terraform Bluemix Load Balanced Web Servers
 
-An example Terraform configuration template to deploy an IBM Cloud load balancer and _N_ number of web servers (nginx).
+An example Terraform configuration template to deploy an IBM load balancer fronted by DNS and _N_ number of web servers running nginx configured with a simple hello world app .
 
-This template will create the following resources:
+This configuration will create the following resources:
 
-- _N_ (default 2) Virtual Guests acting as Web Servers
-- An IBM Cloud LBaaS
-- _N_ (default 2) An IBM Cloud LBaaS Service definitions
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-# Table of Contents
-
-- [tf-bluemix-loadbalanced-nginx-multi-region](#tf-bluemix-loadbalanced-nginx-multi-region)
-- [Architecture](#architecture)
-- [Usage](#usage)
-- [Available Data Centers](#available-data-centers)
-- [Running in Multiple Data centers](#running-in-multiple-data-centers)
-- [Dependency Graph](#dependency-graph)
-- [Setting up Provider Credentials](#setting-up-provider-credentials)
-  - [Environment Variables using IBMid credentials](#environment-variables-using-ibmid-credentials)
-    - [IBMid Credentials](#ibmid-credentials)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- A Load balancer
+- _N_ (default 2) load balancer service definitions
+- _N_ (default 2) virtual guests acting as web servers
+- A DNS domain
+- A DNS record
 
 # Architecture
 
-```
-                         HTTP Requests
-                               +
-                               |
-                               |
-                               |
-                               |
-                               |
-           +-------------------v-------------------+
-           |                                       |
-           |                                       |
-           |         Load Balancer                 |
-           |                                       |
-           |                                       |
-       +---+-----------------+---------------------+---+
-       |                     |                         |
-       |                     |                         |
-       |                     |                         |
-+------v-------+     +-------v------+    +-------------v--+
-|              |     |              |    | +----------------+
-|              |     |              |    | | +----------------+
-|              |     |              |    | | | +-----------------+
-|  Web Server  |     |  Web Server  |    | | | |           | | | |
-|              |     |              |    | | | | Web Server| | | |
-|              |     |              |    | | | |           | | | |
-|              |     |              |    | | | |           | | | |
-+--------------+     +--------------+    +-----------------+ | | |
-                                           +-----------------+ | |
-                                             +-----------------+ |
-                                              +------------------+
-                                               N # of servers
-```
+![Non-Redundent Two-tier Architecture](./non-redundent-two-tier-arch-diag.png)
 
 # Usage
 
-This is not a module, it is a terraform configuration template that can be cloned to be used. A module is used in this template for creating the load balancer and load balancer service group; it can be found at https://github.com/ckelner/tf_ibmcloud_local_loadbalancer/tree/v1.1.
-
-Variables can be defined or overwritten using `terraform.tfvars`. Currently `node_count` and `public_key` are being defined and overwritten.
-
-Available IBM Cloud data centers are listed in the section below and can be changed from the default `dal06` by overwriting the default in `terraform.tfvars` using `datacenter = <new-value>`.
+This is not a module, it is a terraform configuration template that can be cloned or forked to be used with the IBM Cloud terraform binary locally, or it can be used with the [IBM Cloud Schematics](https://github.com/IBM-Bluemix/schematics-onboarding) service. A module is used in this template for creating the load balancer and load balancer service group; it can be found at [ckelner/tf_ibmcloud_local_loadbalancer](https://github.com/ckelner/tf_ibmcloud_local_loadbalancer/).
 
 You will need to [Setup up IBM Cloud provider credentials](#setting-up-provider-credentials), please see the section titled "[Setting up Provider Credentials](#setting-up-provider-credentials)" for help.
 
+Additionally you will need the IBM Terraform binary. You can obtain this binary by visiting [github.com/IBM-Bluemix/schematics-onboarding](https://github.com/IBM-Bluemix/schematics-onboarding#ibm-bluemix-schematics-service-on-boarding).
+
 To run this project execute the following steps:
 
-- Change the `public_key` variable value in `terraform.tfvars` to some public key material of your own.
+- Supply or override the following variable values:
+  - `datacenter` - Available IBM Cloud data centers are listed in the [Available Data Centers](#available-data-centers) section below. A default value of `dal06` is supplied but can be overwritten in `terraform.tfvars` by using `datacenter = <new-value>`.
+  - `public_key`
+  - `key_label`
+  - `key_note`
+- The above variables can be supplied using `terraform.tfvars`, see https://www.terraform.io/intro/getting-started/variables.html#from-a-file for instructions, or alternatively these values can be supplied via the command line or environment variables, see https://www.terraform.io/intro/getting-started/variables.html.
+- Specifically for `public_key` material see ["Generating a new SSH key and adding it to the ssh-agent"](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)) so that your workstation will use the key.
 - `terraform get`: this will get all referenced modules
 - `terraform plan`: this will perform a dry run to show what infrastructure terraform intends to create
 - `terraform apply`: this will create actual infrastructure
@@ -82,51 +41,48 @@ To run this project execute the following steps:
 - `terraform destroy`: this will destroy all infrastructure which has been created
 
 # Available Data Centers
-- ams01 : Amsterdam 1
-- ams03 : Amsterdam 3
-- che01 : Chennai 1
-- dal01 : Dallas 1
-- dal10 : Dallas 10
-- dal12 : Dallas 12
-- dal02 : Dallas 2
-- dal05 : Dallas 5
-- dal06 : Dallas 6
-- dal07 : Dallas 7
-- dal09 : Dallas 9
-- fra02 : Frankfurt 2
-- hkg02 : Hong Kong 2
-- hou02 : Houston 2
-- lon02 : London 2
-- mel01 : Melbourne 1
-- mex01 : Mexico 1
-- mil01 : Milan 1
-- mon01 : Montreal 1
-- osl01 : Oslo 1
-- par01 : Paris 1
-- sjc01 : San Jose 1
-- sjc03 : San Jose 3
-- sao01 : Sao Paulo 1
-- sea01 : Seattle 1
-- seo01 : Seoul 1
-- sng01 : Singapore 1
-- syd01 : Sydney 1
-- syd04 : Sydney 4
-- tok02 : Tokyo 2
-- tor01 : Toronto 1
-- wdc01 : Washington 1
-- wdc04 : Washington 4
+Any of these values is valid for use with the `datacenter` variable:
+- `ams01`: Amsterdam 1
+- `ams03`: Amsterdam 3
+- `che01`: Chennai 1
+- `dal01`: Dallas 1
+- `dal10`: Dallas 10
+- `dal12`: Dallas 12
+- `dal02`: Dallas 2
+- `dal05`: Dallas 5
+- `dal06`: Dallas 6
+- `dal07`: Dallas 7
+- `dal09`: Dallas 9
+- `fra02`: Frankfurt 2
+- `hkg02`: Hong Kong 2
+- `hou02`: Houston 2
+- `lon02`: London 2
+- `mel01`: Melbourne 1
+- `mex01`: Mexico 1
+- `mil01`: Milan 1
+- `mon01`: Montreal 1
+- `osl01`: Oslo 1
+- `par01`: Paris 1
+- `sjc01`: San Jose 1
+- `sjc03`: San Jose 3
+- `sao01`: Sao Paulo 1
+- `sea01`: Seattle 1
+- `seo01`: Seoul 1
+- `sng01`: Singapore 1
+- `syd01`: Sydney 1
+- `syd04`: Sydney 4
+- `tok02`: Tokyo 2
+- `tor01`: Toronto 1
+- `wdc01`: Washington 1
+- `wdc04`: Washington 4
 
 # Running in Multiple Data centers
 
-Simply run `terraform plan -var 'datacenter=lon02' -state=lon02.tfstate` or whatever your preferred datacenter is (replace `lon02` for both arguments), and repeat for `terraform apply` with the same arguments.
+Simply run `terraform plan -var 'datacenter=lon02' -state=lon02.tfstate` or whatever your preferred datacenter is (replace `lon02` for both arguments), and repeat for `terraform apply` with the same arguments (or create alternative `terraform.tfvars` files and pass them to terraform).
 
 # Video of Terraform Execution
 
-[Click here to watch a video of Terraform Plan, Apply, and Destroy](https://youtu.be/vTKeWTfalTU)
-
-# Dependency Graph
-
-![graph](graph.png)
+[Click here to watch a video of Terraform Plan, Apply, and Destroy](https://youtu.be/vTKeWTfalTU) - this is a simple video that shows the core three phases of execution and management using Terraform.
 
 # Setting up Provider Credentials
 
