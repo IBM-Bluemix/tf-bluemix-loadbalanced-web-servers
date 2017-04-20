@@ -4,3 +4,5 @@ terraform.tfstate*
 *.out
 crash.log
 .terraform
+
+terraform.tfvars
