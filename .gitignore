@@ -6,3 +6,5 @@ crash.log
 .terraform
 
 terraform.tfvars
+
+terraform.tfvars
