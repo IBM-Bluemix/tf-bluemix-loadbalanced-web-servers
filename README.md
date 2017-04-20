@@ -4,6 +4,7 @@ An example Terraform configuration template to deploy an IBM load balancer front
 
 This configuration will create the following resources:
 
+- A Private VLAN
 - A Load balancer
 - _N_ (default 2) load balancer service definitions
 - _N_ (default 2) virtual guests acting as web servers
@@ -18,19 +19,25 @@ This configuration will create the following resources:
 
 This is not a module, it is a terraform configuration template that can be cloned or forked to be used with the IBM Cloud terraform binary locally, or it can be used with the [IBM Cloud Schematics](https://github.com/IBM-Bluemix/schematics-onboarding) service. A module is used in this template for creating the load balancer and load balancer service group; it can be found at [ckelner/tf_ibmcloud_local_loadbalancer](https://github.com/ckelner/tf_ibmcloud_local_loadbalancer/).
 
-You will need to [Setup up IBM Cloud provider credentials](#setting-up-provider-credentials), please see the section titled "[Setting up Provider Credentials](#setting-up-provider-credentials)" for help.
-
-Additionally you will need the IBM Terraform binary. You can obtain this binary by visiting [github.com/IBM-Bluemix/schematics-onboarding](https://github.com/IBM-Bluemix/schematics-onboarding#ibm-bluemix-schematics-service-on-boarding).
-
 To run this project execute the following steps:
 
+- [Setup up IBM Cloud provider credentials](#setting-up-provider-credentials), please see the section titled "[Setting up Provider Credentials](#setting-up-provider-credentials)" for help.
+- You will need the IBM Terraform binary or access to the IBM Schematics service. You can obtain either by visiting [github.com/IBM-Bluemix/schematics-onboarding](https://github.com/IBM-Bluemix/schematics-onboarding#ibm-bluemix-schematics-service-on-boarding).
 - Supply or override the following variable values:
   - `datacenter` - Available IBM Cloud data centers are listed in the [Available Data Centers](#available-data-centers) section below. A default value of `dal06` is supplied but can be overwritten in `terraform.tfvars` by using `datacenter = <new-value>`.
-  - `public_key`
-  - `key_label`
-  - `key_note`
+  - `public_key` - public SSH key material to be installed on the server.
+    - Specifically for `public_key` material see ["Generating a new SSH key and adding it to the ssh-agent"](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)) so that your workstation will use the key.
+  - `key_label` - a label for the SSH key, a default of `schematics-demo-ssh-key` is supplied.
+  - `key_note` - a note for the SSH key, a default of `""` is supplied.
+  - `vlan_name` - The name of the private VLAN that the web servers will be placed in. A default of `private-vlan` is supplied.
+  - `subnet_size` - The size of the subnet for the private VLAN that the web servers will be placed in. A default of `16` is supplied.
+  - `node_count` - The number of web servers to create and put behind the load balancer. A default of `2` is supplied.
+  - `web_operating_system` - The OS to install on the web servers -- **WARNING** changing this will likely break the setup of nginx. A default of `UBUNTU_LATEST` is supplied.
+  - `port` - the port that the load balancer and the web servers will serve traffic on.
+  - `vm_cores` - the number of cores the web servers will have. Defaults to `1`.
+  - `vm_memory` - the amount of memory the web servers will have. Defaults to `1024`.
+  - `vm_tags` - tags to apply to the VMs. The deafult is `nginx`, `demo`, `schematics`, and `webserver`.
 - The above variables can be supplied using `terraform.tfvars`, see https://www.terraform.io/intro/getting-started/variables.html#from-a-file for instructions, or alternatively these values can be supplied via the command line or environment variables, see https://www.terraform.io/intro/getting-started/variables.html.
-- Specifically for `public_key` material see ["Generating a new SSH key and adding it to the ssh-agent"](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)) so that your workstation will use the key.
 - `terraform get`: this will get all referenced modules
 - `terraform plan`: this will perform a dry run to show what infrastructure terraform intends to create
 - `terraform apply`: this will create actual infrastructure

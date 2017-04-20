@@ -11,15 +11,27 @@ provider "ibmcloud" {
 }
 
 ##############################################################################
+# IBM VLAN
+# http://ibmcloudterraformdocs.chriskelner.com/docs/providers/ibmcloud/r/infra_vlan.html
+##############################################################################
+resource "ibmcloud_infra_vlan" "private_vlan" {
+   name = "${var.vlan_name}"
+   datacenter = "${var.datacenter}"
+   type = "PRIVATE"
+   subnet_size = "${var.subnet_size}"
+}
+
+##############################################################################
 # IBM SSH Key: For connecting to VMs
 # http://ibmcloudterraformdocs.chriskelner.com/docs/providers/ibmcloud/r/infra_ssh_key.html
 ##############################################################################
 resource "ibmcloud_infra_ssh_key" "ssh_key" {
-  label = "demo"
-  notes = "demo"
+  label = "${var.key_label}"
+  notes = "${var.key_note}"
   # Public key, so this is completely safe
   public_key = "${var.public_key}"
 }
+
 
 ##############################################################################
 # IBM Virtual Guests -- Web Resource Definition
@@ -124,22 +136,31 @@ variable slaccountnum {
 variable datacenter {
   default = "dal06"
 }
-# The SSH Key to use on the Nginx virtual machines
-# Defined in terraform.tfvars
-variable public_key {
-  description = "Your public SSH key"
+variable vlan_name {
+  description = "The name of the private VLAN that the web servers will be placed in."
+  default = "private-vlan"
 }
-# This is stored in a file not checked into source control or passed in via command line or stored as a secret in a service wrapping terraform -- should be used with public_key_material (should be of the same key)
-variable "private_key_material" {
-  description = "The private key material used to connect via SSH; define in terraform.tfvars or if using a service like Terraform Enterprise define it there."
-  default = <<-EOF
-  ...
-  EOF
+variable subnet_size {
+  description = "The size of the subnet for the private VLAN that the web servers will be placed in."
+  default = 16
+}
+# The SSH Key to use on the Nginx virtual machines
+variable public_key {
+  description = "Your public SSH key material."
+}
+variable key_label {
+  description = "A label for the SSH key that gets created."
+  default = "schematics-demo-ssh-key"
+}
+variable key_note {
+  description = "A note for the SSH key that gets created."
+  default = ""
 }
 # The number of web nodes to deploy; You can adjust this number to create more
 # virtual machines in the IBM Cloud; adjusting this number also updates the
 # loadbalancer with the new node
 variable node_count {
+  description = "The number of web servers to create and put behind the load balancer."
   default = 2
 }
 # The target operating system for the web nodes
@@ -152,10 +173,12 @@ variable port {
 }
 # The number of cores each web virtual guest will recieve
 variable vm_cores {
+  description = "The number of cores the web servers will have."
   default = 1
 }
 # The amount of memory each web virtual guest will recieve
 variable vm_memory {
+  description = "the amount of memory the web servers will have."
   default = 1024
 }
 # Tags which will be applied to the web VMs
@@ -163,7 +186,8 @@ variable vm_tags {
   default = [
     "nginx",
     "webserver",
-    "demo"
+    "demo",
+    "schematics"
   ]
 }
 
@@ -171,11 +195,14 @@ variable vm_tags {
 # Outputs: printed at the end of terraform apply
 ##############################################################################
 output "node_ids" {
-    value = ["${ibmcloud_infra_virtual_guest.web_node.*.id}"]
+  value = ["${ibmcloud_infra_virtual_guest.web_node.*.id}"]
 }
 output "loadbalancer_id" {
-    value = "${module.loadbalancer.loadbalancer_id}"
+  value = "${module.loadbalancer.loadbalancer_id}"
 }
 output "loadbalancer_address" {
-    value = "${module.loadbalancer.loadbalancer_address}"
+  value = "${module.loadbalancer.loadbalancer_address}"
+}
+output "ssh_key_id" {
+  value = "${ibmcloud_infra_ssh_key.ssh_key.id}"
 }
