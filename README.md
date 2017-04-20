@@ -36,6 +36,7 @@ To run this project execute the following steps:
   - `vm_cores` - the number of cores the web servers will have. Defaults to `1`.
   - `vm_memory` - the amount of memory the web servers will have. Defaults to `1024`.
   - `vm_tags` - tags to apply to the VMs. The deafult is `nginx`, `demo`, `schematics`, and `webserver`.
+  - `vm_domain` - The domain name for your VMs. Defaults to `schematics-example.com`.
 - The above variables can be supplied using `terraform.tfvars`, see https://www.terraform.io/intro/getting-started/variables.html#from-a-file for instructions, or alternatively these values can be supplied via the command line or environment variables, see https://www.terraform.io/intro/getting-started/variables.html.
 - `terraform get`: this will get all referenced modules
 - `terraform plan`: this will perform a dry run to show what infrastructure terraform intends to create

@@ -40,13 +40,14 @@ resource "ibmcloud_infra_virtual_guest" "web_node" {
   # number of nodes to create, will iterate over this resource
   count                = "${var.node_count}"
   # demo hostname and domain
-  hostname             = "demo-web-node-${count.index+1}"
-  domain               = "demo.com"
+  hostname             = "${var.vm_domain}-${count.index+1}"
+  domain               = "${var.vm_domain}"
   # the operating system to use for the VM
   os_reference_code    = "${var.web_operating_system}"
   # the datacenter to deploy the VM to
   datacenter           = "${var.datacenter}"
-  private_network_only = false
+  private_vlan_id      = "${ibmcloud_infra_vlan.private_vlan.id}"
+  private_network_only = true
   cores                = "${var.vm_cores}"
   memory               = "${var.vm_memory}"
   local_disk           = true
@@ -180,6 +181,10 @@ variable vm_memory {
   description = "the amount of memory the web servers will have."
   default = 1024
 }
+variable vm_domain {
+  description = "The domain name for your VMs."
+  default = "schematics-example.com"
+}
 # Tags which will be applied to the web VMs
 variable vm_tags {
   default = [
@@ -207,6 +212,9 @@ output "ssh_key_id" {
 }
 output "node_ids" {
   value = ["${ibmcloud_infra_virtual_guest.web_node.*.id}"]
+}
+output "node_ips" {
+  value = ["${ibmcloud_infra_virtual_guest.web_node.*.ipv4_address}"]
 }
 output "loadbalancer_id" {
   value = "${module.loadbalancer.loadbalancer_id}"
