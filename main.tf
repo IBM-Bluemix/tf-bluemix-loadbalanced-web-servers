@@ -32,7 +32,6 @@ resource "ibmcloud_infra_ssh_key" "ssh_key" {
   public_key = "${var.public_key}"
 }
 
-
 ##############################################################################
 # IBM Virtual Guests -- Web Resource Definition
 # http://ibmcloudterraformdocs.chriskelner.com/docs/providers/ibmcloud/r/infra_virtual_guest.html
@@ -194,6 +193,18 @@ variable vm_tags {
 ##############################################################################
 # Outputs: printed at the end of terraform apply
 ##############################################################################
+output "vlan_id" {
+  value = "${ibmcloud_infra_vlan.private_vlan.id}"
+}
+output "vlan_resources" {
+  value = "${ibmcloud_infra_ssh_key.private_vlan.child_resource_count}"
+}
+output "vlan_subnets" {
+  value = "${ibmcloud_infra_ssh_key.private_vlan.subnets}"
+}
+output "ssh_key_id" {
+  value = "${ibmcloud_infra_ssh_key.ssh_key.id}"
+}
 output "node_ids" {
   value = ["${ibmcloud_infra_virtual_guest.web_node.*.id}"]
 }
@@ -202,7 +213,4 @@ output "loadbalancer_id" {
 }
 output "loadbalancer_address" {
   value = "${module.loadbalancer.loadbalancer_address}"
-}
-output "ssh_key_id" {
-  value = "${ibmcloud_infra_ssh_key.ssh_key.id}"
 }
