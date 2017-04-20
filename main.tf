@@ -177,10 +177,10 @@ output "vlan_id" {
   value = "${ibmcloud_infra_vlan.private_vlan.id}"
 }
 output "vlan_resources" {
-  value = "${ibmcloud_infra_ssh_key.private_vlan.child_resource_count}"
+  value = "${ibmcloud_infra_vlan.private_vlan.child_resource_count}"
 }
 output "vlan_subnets" {
-  value = "${ibmcloud_infra_ssh_key.private_vlan.subnets}"
+  value = "${ibmcloud_infra_vlan.private_vlan.subnets}"
 }
 output "ssh_key_id" {
   value = "${ibmcloud_infra_ssh_key.ssh_key.id}"
