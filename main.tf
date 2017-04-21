@@ -96,7 +96,7 @@ resource "ibmcloud_infra_lb_local_service" "web_lb_local_service" {
   # Uses HTTP to as a healthcheck
   health_check_type = "HTTP"
   # Where to send traffic to
-  ip_address_id = "${element(ibmcloud_infra_virtual_guest.web_node.*.ip_address_id_private, count.index)}"
+  ip_address_id = "${element(ibmcloud_infra_virtual_guest.web_node.*.ip_address_id, count.index)}"
   # For demonstration purposes; creates an explicit dependency
   depends_on = ["ibmcloud_infra_virtual_guest.web_node"]
 }
