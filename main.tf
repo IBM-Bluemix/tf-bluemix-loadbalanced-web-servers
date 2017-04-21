@@ -11,12 +11,23 @@ provider "ibmcloud" {
 }
 
 ##############################################################################
-# IBM VLAN
+# IBM VLANs
 # http://ibmcloudterraformdocs.chriskelner.com/docs/providers/ibmcloud/r/infra_vlan.html
 ##############################################################################
-resource "ibmcloud_infra_vlan" "private_vlan" {
-   name = "${var.vlan_name}"
+resource "ibmcloud_infra_vlan" "public_vlan" {
+   name = "${var.public_vlan_name}"
    datacenter = "${var.datacenter}"
+   type = "PUBLIC"
+   subnet_size = "${var.subnet_size}"
+}
+
+resource "ibmcloud_infra_vlan" "private_vlan" {
+   name = "${var.private_vlan_name}"
+   datacenter = "${var.datacenter}"
+   # private ONLY vlan network configurations require a vyatta appliance to talk
+   # to servers/services from the public network and ordering a vyatta requires
+   # an upgraded SL account which most people do not have access to (also costly)
+   # e.g. https://aws.amazon.com/premiumsupport/knowledge-center/public-load-balancer-private-ec2/
    type = "PRIVATE"
    subnet_size = "${var.subnet_size}"
 }
@@ -46,8 +57,9 @@ resource "ibmcloud_infra_virtual_guest" "web_node" {
   os_reference_code    = "${var.web_operating_system}"
   # the datacenter to deploy the VM to
   datacenter           = "${var.datacenter}"
+  public_vlan_id       = "${ibmcloud_infra_vlan.public_vlan.id}"
   private_vlan_id      = "${ibmcloud_infra_vlan.private_vlan.id}"
-  private_network_only = true
+  private_network_only = false
   cores                = "${var.vm_cores}"
   memory               = "${var.vm_memory}"
   local_disk           = true
@@ -84,7 +96,7 @@ resource "ibmcloud_infra_lb_local_service" "web_lb_local_service" {
   # Uses HTTP to as a healthcheck
   health_check_type = "HTTP"
   # Where to send traffic to
-  ip_address_id = "${element(ibmcloud_infra_virtual_guest.web_node.*.ip_address_id, count.index)}"
+  ip_address_id = "${element(ibmcloud_infra_virtual_guest.web_node.*.ip_address_id_private, count.index)}"
   # For demonstration purposes; creates an explicit dependency
   depends_on = ["ibmcloud_infra_virtual_guest.web_node"]
 }
@@ -111,12 +123,16 @@ variable slaccountnum {
 variable datacenter {
   default = "dal06"
 }
-variable vlan_name {
+variable public_vlan_name {
+  description = "The name of the public VLAN that the web servers will be placed in."
+  default = "public-vlan"
+}
+variable private_vlan_name {
   description = "The name of the private VLAN that the web servers will be placed in."
   default = "private-vlan"
 }
 variable subnet_size {
-  description = "The size of the subnet for the private VLAN that the web servers will be placed in."
+  description = "The size of the subnet for the public and private VLAN that the web servers will be placed in."
   default = 16
 }
 # The SSH Key to use on the Nginx virtual machines
@@ -174,13 +190,13 @@ variable vm_tags {
 # Outputs: printed at the end of terraform apply
 ##############################################################################
 output "vlan_id" {
-  value = "${ibmcloud_infra_vlan.private_vlan.id}"
+  value = "${ibmcloud_infra_vlan.public_vlan.id}"
 }
 output "vlan_resources" {
-  value = "${ibmcloud_infra_vlan.private_vlan.child_resource_count}"
+  value = "${ibmcloud_infra_vlan.public_vlan.child_resource_count}"
 }
 output "vlan_subnets" {
-  value = "${ibmcloud_infra_vlan.private_vlan.subnets}"
+  value = "${ibmcloud_infra_vlan.public_vlan.subnets}"
 }
 output "ssh_key_id" {
   value = "${ibmcloud_infra_ssh_key.ssh_key.id}"
@@ -189,7 +205,7 @@ output "node_ids" {
   value = ["${ibmcloud_infra_virtual_guest.web_node.*.id}"]
 }
 output "node_ips" {
-  value = ["${ibmcloud_infra_virtual_guest.web_node.*.ipv4_address}"]
+  value = ["${ibmcloud_infra_virtual_guest.web_node.*.ipv4_address_private}"]
 }
 output "loadbalancer_id" {
   value = "${module.loadbalancer.loadbalancer_id}"

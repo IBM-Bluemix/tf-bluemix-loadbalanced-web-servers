@@ -4,11 +4,28 @@ An example Terraform configuration template to deploy an IBM load balancer and _
 
 This configuration will create the following resources:
 
+- A Public VLAN
 - A Private VLAN
 - A Load balancer
 - _N_ (default `2`) load balancer service definitions
 - An SSH Key
 - _N_ (default `2`) virtual guests acting as web servers
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+# Table of Contents
+
+- [Architecture](#architecture)
+- [Usage](#usage)
+- [Available Data Centers](#available-data-centers)
+- [Running in Multiple Data centers](#running-in-multiple-data-centers)
+- [TODO](#todo)
+- [Video of Terraform Execution](#video-of-terraform-execution)
+- [Setting up Provider Credentials](#setting-up-provider-credentials)
+  - [Environment Variables using IBMid credentials](#environment-variables-using-ibmid-credentials)
+    - [IBMid Credentials](#ibmid-credentials)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Architecture
 
@@ -28,8 +45,9 @@ To run this project execute the following steps:
     - Specifically for `public_key` material see ["Generating a new SSH key and adding it to the ssh-agent"](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)) so that your workstation will use the key.
   - `key_label` - a label for the SSH key, a default of `schematics-demo-ssh-key` is supplied.
   - `key_note` - a note for the SSH key, a default of `""` is supplied.
-  - `vlan_name` - The name of the private VLAN that the web servers will be placed in. A default of `private-vlan` is supplied.
-  - `subnet_size` - The size of the subnet for the private VLAN that the web servers will be placed in. A default of `16` is supplied.
+  - `private_vlan_name` - The name of the private VLAN that the web servers will be placed in. A default of `private-vlan` is supplied.
+  - `public_vlan_name` - The name of the public VLAN that the web servers will be placed in. A default of `publicvlan` is supplied.
+  - `subnet_size` - The size of the subnet for the public and private VLAN that the web servers will be placed in. A default of `16` is supplied.
   - `node_count` - The number of web servers to create and put behind the load balancer. A default of `2` is supplied.
   - `web_operating_system` - The OS to install on the web servers -- **WARNING** changing this will likely break the setup of nginx. A default of `UBUNTU_LATEST` is supplied.
   - `port` - the port that the load balancer and the web servers will serve traffic on.
@@ -86,6 +104,11 @@ Any of these values is valid for use with the `datacenter` variable:
 # Running in Multiple Data centers
 
 Simply run `terraform plan -var 'datacenter=lon02' -state=lon02.tfstate` or whatever your preferred datacenter is (replace `lon02` for both arguments), and repeat for `terraform apply` with the same arguments (or create alternative `terraform.tfvars` files and pass them to terraform).
+
+# TODO
+
+- [ ] Add iptables configuration to instances
+- [ ] Add Softlayer Firewalls in front of instances
 
 # Video of Terraform Execution
 
