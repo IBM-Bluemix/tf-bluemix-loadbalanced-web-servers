@@ -17,9 +17,9 @@ server {
   index index.php index.html index.htm;
   server_name _;
   location / {
-	   try_files $uri $uri/ =404;
+    try_files $uri $uri/ =404;
   }
-	location ~ \.php$ {
+  location ~ \.php$ {
     include snippets/fastcgi-php.conf;
     fastcgi_pass unix:/run/php/php7.0-fpm.sock;
   }
@@ -94,7 +94,7 @@ div.check {
     </span>
     <span>
       <?php
-        echo $_SERVER['SERVER_ADDR'];
+        echo \$_SERVER['SERVER_ADDR'];
       ?>
     </span>
   </p>
