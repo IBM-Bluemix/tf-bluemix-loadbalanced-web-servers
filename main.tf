@@ -125,11 +125,11 @@ variable datacenter {
 }
 variable public_vlan_name {
   description = "The name of the public VLAN that the web servers will be placed in."
-  default = "public-vlan"
+  default = "demo-schematics-public-vlan"
 }
 variable private_vlan_name {
   description = "The name of the private VLAN that the web servers will be placed in."
-  default = "private-vlan"
+  default = "demo-schematics-private-vlan"
 }
 variable subnet_size {
   description = "The size of the subnet for the public and private VLAN that the web servers will be placed in."
